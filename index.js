@@ -1,6 +1,6 @@
 function stringBase64Encoding(str) {
     const base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    let res = ""
+    let aux = ""
     for (const char of str) {
         // 使用 ES6 将字符串转化为8位二进制格式
         let tmp = char.codePointAt(0).toString(2)
@@ -8,34 +8,23 @@ function stringBase64Encoding(str) {
         while (tmp.length < 8) {
             tmp = "0" + tmp;
         }
-        res += tmp;
+        aux += tmp;
     }
 
-    let pad = "";
-    let i = res.length % 6;
+    let i = aux.length % 6;
+    // 不足三字节，如果等于4则是剩余2个字节
+    let pad = i === 4 ? "=" : "==";
+    aux += i === 4 ? "00" : "0000";
 
-    // 不足三字节
-    // 两个字节处理
-    if (i === 4) {
-        res += "00"
-        pad = "="
-    } else if (i === 2) {
-        // 一个字节处理
-        res += "0000"
-        pad = "=="
-    }
-
-    let x = []
-
-    for (let i = 0; i < res.length / 6; i++) {
+    let res = ""
+    for (let i = 0; i < aux.length / 6; i++) {
         // 补零
-        x.push("00" + res.substr(i * 6, 6))
+        let tmp = "00" + aux.substr(i * 6, 6);
+        // 转化为十进制
+        let index = Number.parseInt(tmp, 2);
+        res += base[index];
     }
-
-    for (let i = 0; i < x.length; i++) {
-        x[i] = base[Number.parseInt(x[i], 2)]
-    }
-    return x.join('') + pad
+    return res + pad;
 }
 
-console.log(base64('jiandan'))
+console.log(stringBase64Encoding('jiandan') === Buffer.from('jiandan').toString('base64'))
